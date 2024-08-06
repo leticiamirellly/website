@@ -1,0 +1,18 @@
+name: Deployment blog API
+
+on: 
+  push:
+    branches:
+      - master
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+       - name: Check out repository
+         uses: actions/checkout@v4
+       - name: Install kubectl and skaffold
+         uses: daisaru11/setup-cd-tools@v1
+         with:
+           kubectl: '1.30.0'
+           skaffold: '2.13.1'
