@@ -21,7 +21,8 @@ router.get('/posts', async (req, res) => {
 		}
 		fs.writeFileSync(filePath, data);
 
-		await nodeRedisDemo(data)
+		await nodeRedisDemo(JSON.parse(data).items)
+
 
 
 		res.send(JSON.stringify(data));
@@ -35,15 +36,48 @@ async function nodeRedisDemo(data: any) {
 	client.on('error', (err) => console.log('Redis Client Error', err));
 
 	try {
-        console.log('Connecting to Redis...');
-        await client.connect();
-        console.log('Connected to Redis');
-        await client.set('posts', JSON.stringify(data));
-    } catch (err) {
-        console.error('Error in Redis operation:', err);
-    } finally {
-        await client.quit();
-    }
+		console.log('Connecting to Redis...');
+		await client.connect();
+		console.log('Connected to Redis');
+
+		const jsonData = await client.get('posts');
+
+		let existingPosts: any[] = [];
+		if (jsonData) {
+			try {
+				const parsedValue = JSON.parse(jsonData);
+				if (Array.isArray(parsedValue)) {
+					existingPosts = [...parsedValue];
+				} else {
+					console.warn('Existing posts data is not in the expected format. Initializing an empty array.');
+					existingPosts = [];
+				}
+			} catch (parseErr) {
+				console.error('Failed to parse existing posts data:', parseErr);
+				existingPosts = [];
+			}
+		} else {
+			const jsonData = JSON.stringify(data);
+			await client.set('posts', jsonData);
+		}
+
+		const newItems = data.items || [];
+
+		const newPosts = newItems.filter((item: any) => !existingPosts.some((existingPost: any) => existingPost.guid === item.guid));
+
+		if (newPosts.length > 0) {
+            const updatedPosts = [...existingPosts, ...newPosts];
+            await client.set('posts', JSON.stringify(updatedPosts));
+            console.log('Posts updated in Redis');
+        } else {
+            console.log('No new posts to update');
+        }
+
+	} catch (err) {
+		console.error('Error in Redis operation:', err);
+	} finally {
+		await client.quit();
+	}
 }
 
 export { router as currentPostsRouter }
