@@ -8,8 +8,15 @@ metadata:
 spec:
   rules:
   - host: myprofile.dev
-  - http:
+    http:
       paths:
+      - path: /llm
+        pathType: Prefix
+        backend:
+          service:
+            name: llm-srv
+            port:
+              number: 4001
       - path: /medium
         pathType: Prefix
         backend:
@@ -17,3 +24,4 @@ spec:
             name: medium-srv
             port:
               number: 4000
+

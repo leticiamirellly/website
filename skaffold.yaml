@@ -8,6 +8,14 @@ build:
   local:
     push: false
   artifacts:
+    - image: mirellyssl/llm
+      context: llm
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'app/*.py'
+            dest: .
     - image: mirellyssl/medium
       context: medium
       docker:

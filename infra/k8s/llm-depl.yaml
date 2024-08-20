@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llm
+  template:
+    metadata:
+      labels:
+        app: llm
+    spec:
+      containers:
+        - name: llm
+          image: mirellyssl/llm
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 4001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-srv
+spec:
+  selector:
+    app: llm
+  ports:
+    - name: llm
+      protocol: TCP
+      port: 4001
+      targetPort: 4001

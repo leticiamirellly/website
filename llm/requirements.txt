@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+redis
+redis-tools
+langchain
+langchain-community
+jq
+async_timeout
+beautifulsoup4

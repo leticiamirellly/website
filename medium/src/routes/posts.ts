@@ -36,30 +36,30 @@ async function nodeRedisDemo(data: any) {
 	client.on('error', (err) => console.log('Redis Client Error', err));
 
 	try {
-		console.log('Connecting to Redis...');
 		await client.connect();
-		console.log('Connected to Redis');
 
 		const jsonData = await client.get('posts');
 
 		let existingPosts: any[] = [];
+		const formattedData = JSON.stringify(data);
 		if (jsonData) {
 			try {
 				const parsedValue = JSON.parse(jsonData);
 				if (Array.isArray(parsedValue)) {
 					existingPosts = [...parsedValue];
 				} else {
-					console.warn('Existing posts data is not in the expected format. Initializing an empty array.');
 					existingPosts = [];
 				}
 			} catch (parseErr) {
-				console.error('Failed to parse existing posts data:', parseErr);
 				existingPosts = [];
 			}
 		} else {
-			const jsonData = JSON.stringify(data);
-			await client.set('posts', jsonData);
+			
+			await client.set('posts', formattedData);
+			// await emitMessageBroker(formattedData)
 		}
+		
+		
 
 		const newItems = data.items || [];
 
@@ -68,16 +68,24 @@ async function nodeRedisDemo(data: any) {
 		if (newPosts.length > 0) {
             const updatedPosts = [...existingPosts, ...newPosts];
             await client.set('posts', JSON.stringify(updatedPosts));
+			// await emitMessageBroker(JSON.stringify(updatedPosts))
             console.log('Posts updated in Redis');
-        } else {
-            console.log('No new posts to update');
-        }
+        } 
+
+		await emitMessageBroker(formattedData)
 
 	} catch (err) {
 		console.error('Error in Redis operation:', err);
 	} finally {
 		await client.quit();
 	}
+}
+
+const emitMessageBroker = async (newPosts: any) => {
+	const messageClient = createClient({ url: 'redis://redis-service:6379' });
+	await messageClient.connect();
+	await messageClient.publish('new_posts_channel', newPosts);
+	await messageClient.quit();
 }
 
 export { router as currentPostsRouter }

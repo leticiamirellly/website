@@ -5,8 +5,5 @@ metadata:
 data:
   redis-config: |
     # Redis configuration
-    bind 0.0.0.0
-    protected-mode no
-    port 6379
-    dir /redis-master-data
-    appendonly yes
+    maxmemory 256mb
+    maxmemory-policy allkeys-lru
