@@ -1,0 +1,31 @@
+# python=3.10
+# fastapi
+# uvicorn
+# redis
+# redis-tools
+# langchain
+# langchain-community
+# jq
+# beautifulsoup4
+# ray
+name: website
+channels:
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - uvicorn
+  - pip:
+    - virtualenv
+    - langchain
+    - langchain-community
+    - fastapi
+    - redis
+    - redis-tools
+    - jq
+    - beautifulsoup4
+    - ray
+    - pandas
+    - numpy
+    - pyarrow
+    - sentence_transformers

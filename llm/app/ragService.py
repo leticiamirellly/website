@@ -1,19 +1,21 @@
 
-
 import os
 from langchain_community.document_loaders import JSONLoader
 import json
-from pprint import pprint
 import jq
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from bs4 import BeautifulSoup
-
+import ray
+from ray.runtime_env import RuntimeEnv
+from ray.util import ActorPool
+import asyncio
+from embedChunks import EmbedChunks
 
 class RagService:
     def __init__(self):
         print('Rag Service')
+        self.embedChunksActor = EmbedChunks.remote()
         
-
     def clean_documents(self, documents):        
         soup = BeautifulSoup(documents, 'html.parser')
         return soup.get_text(separator=' ', strip=True)
@@ -56,20 +58,10 @@ class RagService:
                 cleaned_content_item = self.clean_documents(content)
                 section_mapped = self.chunk_section(item, cleaned_content_item)
                 sections.append(section_mapped)
-        print(sections[0][0])        
+            
+            ds = ray.data.from_items([sections[0][0]])
+            
+            ray_future = self.embedChunksActor.run_concurrent.remote()
+            result = await ray_future
+            
                 
-
-
-# export interface data_dict {
-#     title:       string;
-#     pubDate:     Date;
-#     link:        string;
-#     guid:        string;
-#     author:      string;
-#     thumbnail:   string;
-#     description: string;
-#     content:     string;
-#     enclosure:   Enclosure;
-#     categories:  string[];
-# }
-

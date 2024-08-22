@@ -1,16 +1,16 @@
-FROM python:alpine
+FROM conda/miniconda3:latest
 
 WORKDIR /app
 
-RUN apk add --no-cache build-base curl\
-    && pip install --no-cache-dir virtualenv
+COPY environment.yml .
 
+RUN pip install --no-cache-dir virtualenv
 RUN virtualenv venv
-ENV PATH="/app/venv/bin:$PATH"
 
-COPY requirements.txt .
+RUN conda env create --name website python=3.10 && conda clean -afy \
+    && conda env update --name website --file environment.yml && conda clean -afy
 
-RUN pip install --no-cache-dir -r requirements.txt
+ENV PATH /opt/conda/envs/website/bin:$PATH
 
 COPY /app .
 
@@ -19,4 +19,10 @@ ENV REDIS_PORT=6379
 
 EXPOSE 4001
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "4001"]
+COPY entrypoint.sh /app/entrypoint.sh
+
+# Dar permissão de execução ao script
+RUN chmod +x /app/entrypoint.sh
+
+# Usar o script de entrada como comando principal
+ENTRYPOINT ["/app/entrypoint.sh"]

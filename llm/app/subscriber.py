@@ -5,7 +5,6 @@ import os
 import asyncio
 from time import sleep
 from asyncio import wait_for, TimeoutError
-import async_timeout
 import sys
 sys.stdout.reconfigure(line_buffering=True)
 
